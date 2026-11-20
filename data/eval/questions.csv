@@ -1,0 +1,15 @@
+question,doc,page,answerable,split
+Casual leaves kitni milti hain?,aap_ki_pdf.pdf,4,yes,dev
+Resignation ka notice period kitna hai?,aap_ki_pdf.pdf,7,yes,test
+Overtime kaun approve karta hai?,aap_ki_pdf.pdf,9,yes,dev
+Manager ki salary band kya hai?,hr_salary_policy.docx,1,yes,dev
+Bonus ka faisla kaun karta hai?,hr_salary_policy.docx,1,yes,test
+CEO ka favourite rang kya hai?,,,no,dev
+Company ka Mars par office kahan hai?,,,no,test
+How many casual leaves do employees get per year?,sample_handbook.pdf,1,yes,dev
+What is the notice period for resignation?,sample_handbook.pdf,2,yes,test
+Who approves overtime?,sample_handbook.pdf,3,yes,dev
+What is the manager salary band?,hr_salary_policy.docx,1,yes,dev
+Who decides bonuses?,hr_salary_policy.docx,1,yes,test
+What is the CEO's favourite colour?,,,no,dev
+Does the company have an office on Mars?,,,no,test

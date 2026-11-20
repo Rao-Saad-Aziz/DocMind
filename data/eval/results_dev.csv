@@ -1,0 +1,4 @@
+method,Recall@5,MRR
+bm25,0.667,0.667
+vector,0.667,0.667
+rerank,0.667,0.667

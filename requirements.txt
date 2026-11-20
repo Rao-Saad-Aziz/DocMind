@@ -1,0 +1,11 @@
+pymupdf
+python-docx
+pandas
+numpy
+sentence-transformers
+rank-bm25
+anthropic
+fastapi
+uvicorn
+streamlit
+python-dotenv
