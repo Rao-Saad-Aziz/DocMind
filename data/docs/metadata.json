@@ -1,0 +1,18 @@
+{
+  "aap_ki_pdf.pdf": {
+    "department": "General",
+    "access": "public"
+  },
+  "hr_salary_policy.docx": {
+    "department": "HR",
+    "access": "confidential"
+  },
+  "sample_handbook.pdf": {
+    "department": "HR",
+    "access": "public"
+  },
+  "Revised_Leave_Rules_1980.pdf": {
+    "department": "General",
+    "access": "public"
+  }
+}
