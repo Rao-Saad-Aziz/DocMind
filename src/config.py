@@ -5,9 +5,21 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# On Streamlit Community Cloud the keys live in "Secrets", not in .env: copy them into the environment.
+try:
+    import streamlit as st
+    for _k in ("LLM_API_KEY", "UPLOAD_PASSWORD", "LLM_MODEL"):
+        if _k not in os.environ and _k in st.secrets:
+            os.environ[_k] = str(st.secrets[_k])
+except Exception:
+    pass                                   # no Streamlit or no secrets: just use .env / environment
+
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"   # 384-dim vectors
 RERANK_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
-LLM_MODEL = os.getenv("LLM_MODEL", "llama3.2")
+# No LLM_API_KEY -> free local Ollama model. With LLM_API_KEY -> hosted OpenAI-compatible API (default: Groq, free tier).
+LLM_API_KEY = os.getenv("LLM_API_KEY")
+LLM_API_URL = os.getenv("LLM_API_URL", "https://api.groq.com/openai/v1")
+LLM_MODEL = os.getenv("LLM_MODEL", "llama-3.3-70b-versatile" if LLM_API_KEY else "llama3.2")
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", 200))            # words per chunk
 OVERLAP = int(os.getenv("OVERLAP", 30))                   # words shared between chunks
 
