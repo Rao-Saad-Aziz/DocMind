@@ -4,8 +4,9 @@ pandas
 numpy
 sentence-transformers
 rank-bm25
-anthropic
+ollama
 fastapi
 uvicorn
 streamlit
 python-dotenv
+requests

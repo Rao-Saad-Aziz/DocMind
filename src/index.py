@@ -45,6 +45,15 @@ def add_document(path, department="general", access="internal"):
     return len(new), empty
 
 
+def ensure_index():
+    """On a fresh server (no data/index yet) build the index from the files in data/docs."""
+    if load()[0] or not os.path.isdir(DOCS_DIR):
+        return
+    chunks = load_all()
+    if chunks:
+        save(chunks, embed(chunks))
+
+
 if __name__ == "__main__":
     chunks = load_all()
     if not chunks:
