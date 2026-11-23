@@ -1,7 +1,7 @@
 """Milestone 3: the LLM answers only from retrieved chunks and must cite [document, p.N]."""
 import re
-import ollama
-from src.config import LLM_MODEL
+import requests
+from src.config import LLM_MODEL, LLM_API_KEY, LLM_API_URL
 
 NOT_FOUND = "I couldn't find this in your documents."
 
@@ -14,11 +14,16 @@ SYSTEM = (
 
 
 def llm(prompt, system):
-    """Ask the local Ollama model. temperature 0 = same answer every time (good for evaluation)."""
-    r = ollama.chat(model=LLM_MODEL, options={"temperature": 0},
-                    messages=[{"role": "system", "content": system},
-                              {"role": "user", "content": prompt}])
-    return r["message"]["content"]
+    """Hosted API when LLM_API_KEY is set (used when deployed), otherwise local Ollama. temperature 0 = repeatable."""
+    messages = [{"role": "system", "content": system}, {"role": "user", "content": prompt}]
+    if LLM_API_KEY:
+        r = requests.post(f"{LLM_API_URL}/chat/completions", timeout=60,
+                          headers={"Authorization": f"Bearer {LLM_API_KEY}"},
+                          json={"model": LLM_MODEL, "messages": messages, "temperature": 0, "max_tokens": 500})
+        r.raise_for_status()
+        return r.json()["choices"][0]["message"]["content"]
+    import ollama
+    return ollama.chat(model=LLM_MODEL, options={"temperature": 0}, messages=messages)["message"]["content"]
 
 
 def answer(question, chunks):
