@@ -3,7 +3,7 @@ import os, re, sys, html, hmac
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import streamlit as st
 from src.config import ROLES, ACCESS, DOCS_DIR
-from src.index import add_document
+from src.index import add_document, ensure_index
 from src.retrieve import search, refresh, visible
 from src.answer import answer, NOT_FOUND
 
@@ -12,6 +12,13 @@ st.markdown("""<style>
 mark {background:#ffe066; color:#000; padding:0 3px; border-radius:3px}
 .block-container {max-width: 900px}
 </style>""", unsafe_allow_html=True)
+
+@st.cache_resource(show_spinner="First start: reading documents and building the index...")
+def startup():
+    ensure_index()
+
+
+startup()
 
 EXAMPLES = ["How many casual leaves do employees get?",
             "What is the notice period for resignation?",
@@ -112,7 +119,12 @@ if question:
     with st.chat_message("assistant"):
         with st.spinner("Searching your documents..."):
             chunks = search(question, role, "rerank", 5)
-            text = answer(question, chunks)
+            try:
+                text = answer(question, chunks)
+            except Exception as e:
+                messages.pop()                         # drop the unanswered question
+                st.error(f"Could not get an answer. {e}")
+                st.stop()
         reply = {"role": "assistant", "text": text, "question": question,
                  "sources": [] if text == NOT_FOUND else chunks}
         render(reply)

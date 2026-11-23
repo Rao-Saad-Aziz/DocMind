@@ -20,7 +20,8 @@ def llm(prompt, system):
         r = requests.post(f"{LLM_API_URL}/chat/completions", timeout=60,
                           headers={"Authorization": f"Bearer {LLM_API_KEY}"},
                           json={"model": LLM_MODEL, "messages": messages, "temperature": 0, "max_tokens": 500})
-        r.raise_for_status()
+        if not r.ok:                                   # show Groq's own reason (it never contains your key)
+            raise RuntimeError(f"LLM API error {r.status_code}: {r.text[:300]}")
         return r.json()["choices"][0]["message"]["content"]
     import ollama
     return ollama.chat(model=LLM_MODEL, options={"temperature": 0}, messages=messages)["message"]["content"]
