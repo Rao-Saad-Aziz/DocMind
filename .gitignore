@@ -1,4 +1,6 @@
-.env
 .venv/
 __pycache__/
-data/index/
+.env
+.streamlit/secrets.toml
+data/docmind.db
+data/eval/runs.jsonl
