@@ -4,6 +4,12 @@ import requests
 import pymupdf, docx
 from rank_bm25 import BM25Okapi
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv(override=True)
+except ImportError:
+    pass
+
 DOCS_DIR = "data/docs"                 # PDFs and Word files that live in GitHub (always loaded at start)
 DB_PATH = "data/docmind.db"            # the small SQLite database (created automatically)
 GROQ_URL = "https://api.groq.com/openai/v1"
@@ -134,11 +140,14 @@ def seed():
     import json
     meta_path = os.path.join(DOCS_DIR, "metadata.json")
     meta = json.load(open(meta_path, encoding="utf-8")) if os.path.exists(meta_path) else {}
-    known = {d["name"] for d in query("SELECT name FROM docs")}
+    known = {d["name"] for d in query("SELECT doc as name FROM chunks GROUP BY doc HAVING count(*) > 0")}
     for f in sorted(os.listdir(DOCS_DIR)) if os.path.isdir(DOCS_DIR) else []:
         if f.lower().endswith((".pdf", ".docx")) and f not in known:
             m = meta.get(f, {})
-            add_file(os.path.join(DOCS_DIR, f), m.get("department", "General"), m.get("access", "internal"))
+            try:
+                add_file(os.path.join(DOCS_DIR, f), m.get("department", "General"), m.get("access", "internal"))
+            except Exception as e:
+                print(f"Skipped {f}: {e}")        # bad file is skipped, app keeps running
 
 
 def visible_docs(role):
@@ -203,13 +212,21 @@ def llm(prompt, system):
     return r.json()["choices"][0]["message"].get("content") or ""
 
 
+def normalize_citations(text):
+    for o, c in [("【", "】"), ("〔", "〕"), ("［", "］")]:
+        text = text.replace(o, "[").replace(c, "]")
+    text = re.sub(r"\(([^\)]+\.(?:pdf|docx)[^\)]*)\)", r"[\1]", text, flags=re.IGNORECASE)
+    return text
+
+
 def answer(question, chunks):
     if not chunks:
         return NOT_FOUND
     context = "\n".join(f'<passage source="[{c["doc"]}, p.{c["page"]}]">\n{c["text"]}\n</passage>' for c in chunks)
     text = llm(f"{context}\n\nQuestion: {question}", SYSTEM).strip()
+    text = normalize_citations(text)
     # An answer with no citation is a bug, so we refuse instead of showing it.
-    if NOT_FOUND in text or not re.search(r"\[[^\]]+, p\.\d+\]", text):
+    if text.startswith(NOT_FOUND) or not re.search(r"\[\s*[^\]]+?,\s*p(?:age|\.)?\s*\d+\s*\]", text, re.IGNORECASE):
         return NOT_FOUND
     return text
 

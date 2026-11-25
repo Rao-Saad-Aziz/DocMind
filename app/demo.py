@@ -1,7 +1,8 @@
 """Cortex DocMind: ask your documents a question. Run: streamlit run app/demo.py"""
-import os, re, html, hmac
+import os, re, html, hmac, importlib
 import streamlit as st
 import core
+importlib.reload(core)
 
 st.set_page_config(page_title="Cortex DocMind", page_icon="📄", layout="wide")
 st.markdown("""<style>
@@ -84,7 +85,8 @@ def render(m):
     elif m["text"] == core.NOT_FOUND:
         st.warning(core.NOT_FOUND)
     else:
-        st.markdown(re.sub(r"\[([^\]]+, p\.\d+)\]", r"`📎 \1`", m["text"]))
+        text = getattr(core, "normalize_citations", lambda s: s)(m["text"])
+        st.markdown(re.sub(r"[\[【〔]\s*([^\]】〕]+?,\s*p(?:age|\.)?\s*\d+)\s*[\]】〕]", r"`📎 \1`", text, flags=re.IGNORECASE))
         st.caption(f"Answer built from {len(m['sources'])} passages")
         for c in m["sources"]:
             with st.expander(f"📎 {c['doc']} · page {c['page']}"):

@@ -27,13 +27,21 @@ def llm(prompt, system):
     return ollama.chat(model=LLM_MODEL, options={"temperature": 0}, messages=messages)["message"]["content"]
 
 
+def normalize_citations(text):
+    for o, c in [("【", "】"), ("〔", "〕"), ("［", "］")]:
+        text = text.replace(o, "[").replace(c, "]")
+    text = re.sub(r"\(([^\)]+\.(?:pdf|docx)[^\)]*)\)", r"[\1]", text, flags=re.IGNORECASE)
+    return text
+
+
 def answer(question, chunks):
     if not chunks:
         return NOT_FOUND
     label = lambda c: f"[{c['doc']}, p.{c['page']}]"
     context = "\n".join(f"<passage source=\"{label(c)}\">\n{c['text']}\n</passage>" for c in chunks)
     text = llm(f"{context}\n\nQuestion: {question}", SYSTEM).strip()
+    text = normalize_citations(text)
     # An answer with no citation is a bug, so we refuse instead of showing it.
-    if NOT_FOUND in text or not re.search(r"\[[^\]]+, p\.\d+\]", text):
+    if text.startswith(NOT_FOUND) or not re.search(r"\[\s*[^\]]+?,\s*p(?:age|\.)?\s*\d+\s*\]", text, re.IGNORECASE):
         return NOT_FOUND
     return text

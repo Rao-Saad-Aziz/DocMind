@@ -3,7 +3,7 @@ import os
 from functools import lru_cache
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 # On Streamlit Community Cloud the keys live in "Secrets", not in .env: copy them into the environment.
 try:
