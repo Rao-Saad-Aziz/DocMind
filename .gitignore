@@ -1,6 +1,12 @@
-.venv/
+.venv*/
+venv*/
+env*/
+.env_old_folder/
 __pycache__/
+*.pyc
 .env
 .streamlit/secrets.toml
 data/docmind.db
 data/eval/runs.jsonl
+.DS_Store
+Thumbs.db
